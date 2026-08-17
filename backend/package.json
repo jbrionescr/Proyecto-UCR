@@ -1,0 +1,35 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@emailjs/nodejs": "^5.0.2",
+    "@supabase/supabase-js": "^2.107.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "morgan": "^1.11.0",
+    "next-auth": "^4.24.14",
+    "nodemailer": "^7.0.13",
+    "pg": "^8.21.0",
+    "pg-hstore": "^2.3.4",
+    "postcss": "^8.5.15",
+    "postcss-loader": "^7.3.4",
+    "postcss-preset-env": "^9.6.0",
+    "resend": "^6.12.4",
+    "sequelize": "^6.37.8",
+    "serialize-javascript": "^7.0.5",
+    "terser": "^5.48.0",
+    "typeorm": "^1.0.0"
+  }
+}

@@ -1,0 +1,31 @@
+node_modules/
+.next/
+
+# Variables de entorno: nunca se versionan.
+# La excepcion (!) es indispensable, porque `.env.*` tambien capturaria a
+# `.env.example`, que es justamente la plantilla que SI debe publicarse para
+# que cualquiera pueda levantar el proyecto.
+.env
+.env.*
+.env.local
+backend/.env
+Frontend/.env.local
+!.env.example
+!**/.env.example
+
+# Scripts de prueba / depuración (no versionar — pueden contener credenciales)
+scratch/
+Frontend/test-*.js
+backend/add_nivel_beca.js
+backend/check_tables.js
+backend/count_rows.js
+backend/test_db_passwords.js
+
+# Caché de build de TypeScript (generado)
+Frontend/tsconfig.tsbuildinfo
+
+# Configuración local de Claude Code (no compartir con el equipo)
+.claude/
+
+# Plan de implementación personal (no subir al repo)
+plan_implementacion_john.md

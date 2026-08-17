@@ -1,0 +1,1153 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tareas Pendientes — Plataforma Exalumnos UCR</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap');
+
+  @page {
+    size: A4;
+    margin: 18mm 14mm;
+  }
+
+  :root {
+    --ground:    #F7F8FC;
+    --text:      #0f1c2e;
+    --accent:    #005da4;
+    --accent-2:  #e8f1fb;
+    --critical:  #c41e3a;
+    --warn:      #b45309;
+    --ok:        #166534;
+    --muted:     #5a6a80;
+    --border:    #dde3ef;
+    --num-w:     52px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: var(--ground);
+    color: var(--text);
+    font-size: 12.5px;
+    line-height: 1.55;
+    padding: 40px 36px 60px;
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  /* ── HEADER ──────────────────────────────────────── */
+  .doc-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 18px;
+    border-bottom: 2.5px solid var(--accent);
+    margin-bottom: 28px;
+  }
+  .doc-title h1 {
+    font-family: 'DM Mono', monospace;
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--accent);
+    letter-spacing: -0.3px;
+    line-height: 1.2;
+  }
+  .doc-title p {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 4px;
+    font-weight: 400;
+  }
+  .doc-meta {
+    text-align: right;
+    font-family: 'DM Mono', monospace;
+    font-size: 10.5px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  /* ── SUMMARY STRIP ───────────────────────────────── */
+  .summary-strip {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 32px;
+  }
+  .summary-cell {
+    flex: 1;
+    padding: 12px 14px;
+    border-right: 1px solid var(--border);
+    text-align: center;
+  }
+  .summary-cell:last-child { border-right: none; }
+  .summary-cell .num {
+    font-family: 'DM Mono', monospace;
+    font-size: 22px;
+    font-weight: 500;
+    line-height: 1;
+    display: block;
+    margin-bottom: 3px;
+  }
+  .summary-cell .lbl {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .summary-cell.crit .num { color: var(--critical); }
+  .summary-cell.high .num { color: #c05c00; }
+  .summary-cell.med  .num { color: #0369a1; }
+  .summary-cell.low  .num { color: var(--muted); }
+  .summary-cell.tot  .num { color: var(--accent); }
+
+  /* ── LEGEND ──────────────────────────────────────── */
+  .legend {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+    padding: 10px 14px;
+    background: var(--accent-2);
+    border-radius: 5px;
+    border-left: 3px solid var(--accent);
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--text);
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 9.5px;
+    font-weight: 500;
+    padding: 1px 6px;
+    border-radius: 3px;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+  }
+  .badge.crit  { background: #fde8ec; color: var(--critical);  border: 1px solid #f5c0cb; }
+  .badge.high  { background: #fef3cd; color: #92400e;           border: 1px solid #fcd897; }
+  .badge.med   { background: #dbeafe; color: #1e40af;           border: 1px solid #bfdbfe; }
+  .badge.low   { background: #f1f5f9; color: var(--muted);      border: 1px solid #e2e8f0; }
+  .badge.dep   { background: #f0fdf4; color: var(--ok);         border: 1px solid #bbf7d0; }
+  .badge.done  { background: #dcfce7; color: #15803d;           border: 1px solid #86efac; }
+
+  /* Tareas completadas */
+  tr.task-done td { opacity: 0.62; }
+  tr.task-done .task-name { text-decoration: line-through; text-decoration-color: #86efac; }
+  .done-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-family: 'DM Mono', monospace;
+    font-size: 9.5px;
+    font-weight: 500;
+    color: #15803d;
+    background: #f0fdf4;
+    border: 1px solid #86efac;
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-top: 3px;
+  }
+  .done-tag::before { content: "✓ "; }
+  .block-done {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    color: #15803d;
+    background: #dcfce7;
+    border: 1px solid #86efac;
+    padding: 2px 8px;
+    border-radius: 3px;
+    margin-left: 8px;
+    flex-shrink: 0;
+  }
+
+  /* ── BLOCKS ──────────────────────────────────────── */
+  .block {
+    margin-bottom: 26px;
+    page-break-inside: avoid;
+  }
+  .block-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    padding: 8px 12px 8px 14px;
+    border-radius: 5px;
+  }
+  .block-header.seg    { background: #fde8ec; border-left: 4px solid var(--critical); }
+  .block-header.auth   { background: #fff7ed; border-left: 4px solid #f97316; }
+  .block-header.prof   { background: #eff6ff; border-left: 4px solid #3b82f6; }
+  .block-header.dir    { background: #f0fdf4; border-left: 4px solid #22c55e; }
+  .block-header.match  { background: #faf5ff; border-left: 4px solid #a855f7; }
+  .block-header.don    { background: #fff7ed; border-left: 4px solid #f59e0b; }
+  .block-header.admin  { background: #f0f9ff; border-left: 4px solid #0ea5e9; }
+  .block-header.pos    { background: #fefce8; border-left: 4px solid #eab308; }
+  .block-header.aplic  { background: #f0fdfa; border-left: 4px solid #14b8a6; }
+  .block-header.cv     { background: #fdf4ff; border-left: 4px solid #d946ef; }
+  .block-header.fraud  { background: #fff1f2; border-left: 4px solid #f43f5e; }
+  .block-header.nfunc  { background: #f8fafc; border-left: 4px solid var(--muted); }
+
+  .block-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    background: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .block-title {
+    font-weight: 700;
+    font-size: 12.5px;
+    color: var(--text);
+    flex: 1;
+  }
+  .block-week {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  /* ── TASK TABLE ──────────────────────────────────── */
+  .tasks {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  .tasks tr {
+    border-bottom: 1px solid var(--border);
+  }
+  .tasks tr:last-child { border-bottom: none; }
+  .tasks tr:nth-child(even) { background: rgba(255,255,255,0.55); }
+  .tasks tr:nth-child(odd)  { background: rgba(247,248,252,0.4); }
+
+  .tasks td {
+    padding: 7px 10px;
+    vertical-align: top;
+  }
+  .td-num {
+    width: 48px;
+    text-align: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 10.5px;
+    color: var(--muted);
+    padding-top: 8px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .td-badge {
+    width: 72px;
+    padding-top: 7.5px;
+  }
+  .td-desc {
+    flex: 1;
+  }
+  .task-name {
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--text);
+    line-height: 1.4;
+  }
+  .task-detail {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .dep-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-family: 'DM Mono', monospace;
+    font-size: 9.5px;
+    color: #166534;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    padding: 1px 5px;
+    border-radius: 3px;
+    margin-top: 3px;
+    margin-right: 3px;
+  }
+  .dep-tag::before { content: "↳ "; opacity: 0.6; }
+
+  /* ── DEPENDENCY REFERENCE ────────────────────────── */
+  .dep-section {
+    margin-top: 32px;
+    page-break-before: always;
+  }
+  .dep-section h2 {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--accent);
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .dep-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .dep-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 10px 12px;
+  }
+  .dep-card-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 10.5px;
+    font-weight: 500;
+    color: var(--accent);
+    margin-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 4px;
+  }
+  .dep-chain {
+    font-size: 11px;
+    color: var(--text);
+    line-height: 1.8;
+  }
+  .dep-arrow { color: var(--muted); margin: 0 4px; }
+
+  /* ── FOOTER ──────────────────────────────────────── */
+  .doc-footer {
+    margin-top: 40px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  /* ── PRINT ───────────────────────────────────────── */
+  @media print {
+    body { padding: 0; background: white; }
+    .block { page-break-inside: avoid; }
+    .dep-section { page-break-before: always; }
+    @font-face { font-display: swap; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="doc-header">
+  <div class="doc-title">
+    <h1>tareas_pendientes.md</h1>
+    <p>Plataforma Digital — Fundación Exalumnos UCR · Versión 1.0</p>
+  </div>
+  <div class="doc-meta">
+    Fecha: 24 junio 2026<br>
+    Total tareas: 56<br>
+    Rama: john
+  </div>
+</header>
+
+<!-- SUMMARY -->
+<div class="summary-strip">
+  <div class="summary-cell crit"><span class="num">8</span><span class="lbl">Crítico</span></div>
+  <div class="summary-cell high"><span class="num">22</span><span class="lbl">Alto</span></div>
+  <div class="summary-cell med"><span class="num">18</span><span class="lbl">Medio</span></div>
+  <div class="summary-cell low"><span class="num">8</span><span class="lbl">Bajo</span></div>
+  <div class="summary-cell tot"><span class="num">56</span><span class="lbl">Total</span></div>
+  <div class="summary-cell" style="background:#f0fdf4"><span class="num" style="color:#15803d">5</span><span class="lbl">B6 Hechas</span></div>
+</div>
+
+<!-- LEGEND -->
+<div class="legend">
+  <div class="legend-item"><span class="badge crit">CRÍTICO</span> Bloquea producción o expone datos</div>
+  <div class="legend-item"><span class="badge high">ALTO</span> Core del producto, visible para el usuario</div>
+  <div class="legend-item"><span class="badge med">MEDIO</span> Funcionalidad completa pero no urgente</div>
+  <div class="legend-item"><span class="badge low">BAJO</span> Polish, accesibilidad, no funcionales</div>
+  <div class="legend-item"><span class="badge dep">↳ T-XX</span> Depende de esta tarea</div>
+  <div class="legend-item"><span class="badge done">HECHO</span> Tarea completada y verificada</div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- BLOQUE 0 — SEGURIDAD -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="block">
+  <div class="block-header seg">
+    <span class="block-num">B0</span>
+    <span class="block-title">Seguridad — Hacer primero, todo lo demás depende de esto</span>
+    <span class="block-week">Semana 1</span>
+  </div>
+  <table class="tasks">
+    <tr>
+      <td class="td-num">T-01</td>
+      <td class="td-badge"><span class="badge crit">CRÍTICO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Descomentar <code>verifyToken</code> en las 4 rutas del backend Express</div>
+        <div class="task-detail">donacion.routes.js · match.routes.js · reporteperfil.routes.js · posicion.routes.js — hoy cualquier persona sin sesión puede leer y escribir en estas rutas</div>
+      </td>
+    </tr>
+    <tr>
+      <td class="td-num">T-02</td>
+      <td class="td-badge"><span class="badge crit">CRÍTICO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Agregar <code>requireRole</code> por recurso en rutas protegidas</div>
+        <div class="task-detail">Donaciones → solo EXALUMNO puede crear; confirmar/rechazar → solo ADMIN; reportes → requiere sesión activa</div>
+        <div><span class="dep-tag">T-01</span></div>
+      </td>
+    </tr>
+  </table>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- BLOQUE 1 — AUTENTICACIÓN -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="block">
+  <div class="block-header auth">
+    <span class="block-num">B1</span>
+    <span class="block-title">RF-01 — Autenticación completa</span>
+    <span class="block-week">Semana 1</span>
+  </div>
+  <table class="tasks">
+    <tr>
+      <td class="td-num">T-03</td>
+      <td class="td-badge"><span class="badge high">ALTO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Crear página <code>/auth/verificar?token=...</code> en el frontend</div>
+        <div class="task-detail">El magic link del email apunta a esta ruta que aún no existe — los estudiantes no pueden verificar su correo</div>
+      </td>
+    </tr>
+    <tr>
+      <td class="td-num">T-04</td>
+      <td class="td-badge"><span class="badge high">ALTO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Crear página <code>/auth/reset-password?token=...</code> en el frontend</div>
+        <div class="task-detail">El email de recuperación de contraseña apunta a esta ruta inexistente</div>
+      </td>
+    </tr>
+    <tr>
+      <td class="td-num">T-05</td>
+      <td class="td-badge"><span class="badge high">ALTO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Bug: el campo <code>carrera_ucr</code> no se persiste al registrar un exalumno</div>
+        <div class="task-detail">El backend procesa el campo pero no lo guarda en la tabla Exalumnos — el dato se pierde silenciosamente tras el registro</div>
+      </td>
+    </tr>
+  </table>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- BLOQUE 2 — PERFILES -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="block">
+  <div class="block-header prof">
+    <span class="block-num">B2</span>
+    <span class="block-title">RF-02 / RF-03 — Perfiles de Exalumno y Estudiante</span>
+    <span class="block-week">Semana 1–2</span>
+  </div>
+  <table class="tasks">
+    <tr>
+      <td class="td-num">T-06</td>
+      <td class="td-badge"><span class="badge high">ALTO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Agregar campos faltantes al modelo Sequelize de Exalumno</div>
+        <div class="task-detail">Faltan: <code>linkedin_url</code>, <code>bio</code> — están en Prisma pero no en el modelo Express que persiste los datos</div>
+      </td>
+    </tr>
+    <tr>
+      <td class="td-num">T-07</td>
+      <td class="td-badge"><span class="badge high">ALTO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Implementar lógica de cálculo automático de <code>perfil_completo</code></div>
+        <div class="task-detail">El campo existe en la BD pero siempre es <code>false</code> — ningún servicio verifica que todos los campos obligatorios estén llenos y lo actualiza. Sin esto el matching y el directorio no pueden filtrar correctamente</div>
+        <div><span class="dep-tag">T-06</span></div>
+      </td>
+    </tr>
+    <tr>
+      <td class="td-num">T-08</td>
+      <td class="td-badge"><span class="badge high">ALTO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Completar modelo Prisma de Estudiante con campos del spec</div>
+        <div class="task-detail">Faltan: <code>carnet_ucr</code>, <code>sede</code>, <code>anio_ingreso</code>, <code>proyecto_titulo</code>, <code>proyecto_descripcion</code>, <code>proyecto_tipo</code>, <code>proyecto_necesidades</code>, <code>habilidades</code>, <code>busca_financiamiento</code>, <code>busca_mentoria</code>, <code>busca_empleo</code>, <code>busca_pasantia</code></div>
+      </td>
+    </tr>
+    <tr>
+      <td class="td-num">T-09</td>
+      <td class="td-badge"><span class="badge high">ALTO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Crear página <code>/perfil/[id]</code> — vista pública del perfil</div>
+        <div class="task-detail">No existe ninguna página pública de perfil. El botón "Conectar" del directorio no tiene destino. Debe mostrar foto, carrera, tipo de apoyo, áreas de interés — nunca nivel de beca</div>
+        <div><span class="dep-tag">T-06</span><span class="dep-tag">T-07</span></div>
+      </td>
+    </tr>
+    <tr>
+      <td class="td-num">T-10</td>
+      <td class="td-badge"><span class="badge high">ALTO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Conectar formulario <code>/perfil/editar</code> a las APIs reales</div>
+        <div class="task-detail">El formulario existe con UI completa pero no llama a ningún endpoint — los cambios no se guardan</div>
+        <div><span class="dep-tag">T-01</span><span class="dep-tag">T-06</span><span class="dep-tag">T-08</span></div>
+      </td>
+    </tr>
+    <tr>
+      <td class="td-num">T-11</td>
+      <td class="td-badge"><span class="badge med">MEDIO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Validar formato de carné UCR al guardar perfil de estudiante</div>
+        <div class="task-detail">El spec exige error 400 si el carné no cumple el formato oficial — sin esta validación entran datos incoherentes</div>
+        <div><span class="dep-tag">T-08</span></div>
+      </td>
+    </tr>
+    <tr>
+      <td class="td-num">T-12</td>
+      <td class="td-badge"><span class="badge med">MEDIO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Implementar opción "pausar perfil" para estudiantes</div>
+        <div class="task-detail">El estudiante debe poder marcar su perfil como pausado para no recibir contactos temporalmente — campo en BD, sin UI ni lógica</div>
+        <div><span class="dep-tag">T-10</span></div>
+      </td>
+    </tr>
+    <tr>
+      <td class="td-num">T-13</td>
+      <td class="td-badge"><span class="badge med">MEDIO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Lógica: si <code>proyecto_porcentaje_avance = 100</code>, preguntar si el proyecto finalizó</div>
+        <div class="task-detail">El backend debe responder con una pregunta de confirmación cuando el avance llega al 100%; el frontend debe mostrar el modal correspondiente</div>
+        <div><span class="dep-tag">T-10</span></div>
+      </td>
+    </tr>
+  </table>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- BLOQUE 3 — DIRECTORIOS -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="block">
+  <div class="block-header dir">
+    <span class="block-num">B3</span>
+    <span class="block-title">RF-04 / RF-05 — Directorios de Exalumnos y Estudiantes</span>
+    <span class="block-week">Semana 2</span>
+  </div>
+  <table class="tasks">
+    <tr>
+      <td class="td-num">T-14</td>
+      <td class="td-badge"><span class="badge crit">CRÍTICO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Implementar <code>GET /exalumnos</code> con filtros reales en el backend</div>
+        <div class="task-detail">Filtros requeridos: carrera UCR, sector/industria, áreas de interés, tipo de apoyo, país/ciudad, búsqueda por nombre parcial. Excluir perfiles con <code>visible_en_directorio = false</code>. Nunca exponer datos sensibles</div>
+        <div><span class="dep-tag">T-01</span><span class="dep-tag">T-07</span></div>
+      </td>
+    </tr>
+    <tr>
+      <td class="td-num">T-15</td>
+      <td class="td-badge"><span class="badge crit">CRÍTICO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Implementar <code>GET /estudiantes</code> con filtros reales en el backend</div>
+        <div class="task-detail">Filtros: carrera, área temática del proyecto, tipo de apoyo buscado, tipo de proyecto, sede UCR. Nunca exponer <code>nivel_beca</code>, <code>promedio_ponderado</code>, ni datos socioeconómicos</div>
+        <div><span class="dep-tag">T-01</span><span class="dep-tag">T-07</span><span class="dep-tag">T-08</span></div>
+      </td>
+    </tr>
+    <tr>
+      <td class="td-num">T-16</td>
+      <td class="td-badge"><span class="badge high">ALTO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Conectar <code>/directorio/exalumnos</code> al endpoint real (reemplazar mock)</div>
+        <div class="task-detail">La página muestra datos hardcodeados. Incluir filtros funcionales con AND lógico, búsqueda con debounce y paginación</div>
+        <div><span class="dep-tag">T-14</span></div>
+      </td>
+    </tr>
+    <tr>
+      <td class="td-num">T-17</td>
+      <td class="td-badge"><span class="badge high">ALTO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Conectar <code>/directorio/estudiantes</code> al endpoint real (reemplazar mock)</div>
+        <div class="task-detail">Mismos requisitos de filtros, paginación y debounce que T-16</div>
+        <div><span class="dep-tag">T-15</span></div>
+      </td>
+    </tr>
+  </table>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- BLOQUE 4 — MATCHING -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="block">
+  <div class="block-header match">
+    <span class="block-num">B4</span>
+    <span class="block-title">RF-06 — Sistema de Matching</span>
+    <span class="block-week">Semana 2–3</span>
+  </div>
+  <table class="tasks">
+    <tr>
+      <td class="td-num">T-18</td>
+      <td class="td-badge"><span class="badge crit">CRÍTICO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Implementar algoritmo de score (0–100) en <code>match.service.js</code></div>
+        <div class="task-detail">4 criterios: misma carrera UCR (30 pts) · áreas de interés en común proporcional (30 pts) · sector ↔ área temática proyecto (20 pts) · tipo de apoyo ofrecido ↔ buscado (20 pts). Hoy el servicio es CRUD puro sin ningún cálculo</div>
+        <div><span class="dep-tag">T-07</span></div>
+      </td>
+    </tr>
+    <tr>
+      <td class="td-num">T-19</td>
+      <td class="td-badge"><span class="badge high">ALTO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Implementar <code>POST /matches/generar</code> — crear sugerencias al completar perfil</div>
+        <div class="task-detail">Al activarse <code>perfil_completo = true</code>, generar lista de matches ordenados por score. Excluir score 0</div>
+        <div><span class="dep-tag">T-18</span></div>
+      </td>
+    </tr>
+    <tr>
+      <td class="td-num">T-20</td>
+      <td class="td-badge"><span class="badge high">ALTO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Implementar <code>POST /matches/:id/iniciar</code> — solicitar conexión</div>
+        <div class="task-detail">Cambia estado a CONTACTADO y envía email de notificación a la otra parte</div>
+        <div><span class="dep-tag">T-01</span><span class="dep-tag">T-18</span></div>
+      </td>
+    </tr>
+    <tr>
+      <td class="td-num">T-21</td>
+      <td class="td-badge"><span class="badge high">ALTO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Implementar <code>POST /matches/:id/aceptar</code> y <code>/rechazar</code></div>
+        <div class="task-detail">Al aceptar: estado ACTIVO, ambas partes reciben el email del otro. Al rechazar: el exalumno no puede volver a solicitar al mismo estudiante (restricción en BD)</div>
+        <div><span class="dep-tag">T-20</span></div>
+      </td>
+    </tr>
+    <tr>
+      <td class="td-num">T-22</td>
+      <td class="td-badge"><span class="badge high">ALTO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Conectar <code>/mis-matches</code> al API real (reemplazar datos hardcodeados)</div>
+        <div class="task-detail">La página tiene UI completa pero con datos ficticios. Incluir botones funcionales de solicitar/aceptar/rechazar</div>
+        <div><span class="dep-tag">T-19</span><span class="dep-tag">T-21</span></div>
+      </td>
+    </tr>
+    <tr>
+      <td class="td-num">T-23</td>
+      <td class="td-badge"><span class="badge med">MEDIO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Email al admin cuando un match pasa a estado ACTIVO</div>
+        <div class="task-detail">Notificación vía EmailJS template_hih689c al confirmar una conexión</div>
+        <div><span class="dep-tag">T-21</span></div>
+      </td>
+    </tr>
+  </table>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- BLOQUE 5 — DONACIONES -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="block">
+  <div class="block-header don">
+    <span class="block-num">B5</span>
+    <span class="block-title">RF-07 — Donaciones</span>
+    <span class="block-week">Semana 3</span>
+  </div>
+  <table class="tasks">
+    <tr>
+      <td class="td-num">T-24</td>
+      <td class="td-badge"><span class="badge high">ALTO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Implementar <code>POST /donaciones</code> con validaciones completas</div>
+        <div class="task-detail">Solo EXALUMNO puede crear. Campos obligatorios: destino (proyecto o fondo general), monto, moneda, método, fecha transferencia, comprobante. Estado inicial: PENDIENTE</div>
+        <div><span class="dep-tag">T-01</span><span class="dep-tag">T-02</span></div>
+      </td>
+    </tr>
+    <tr>
+      <td class="td-num">T-25</td>
+      <td class="td-badge"><span class="badge high">ALTO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Flujo frontend de donación: selector → SINPE/IBAN → subir comprobante</div>
+        <div class="task-detail">El formulario actual no implementa el flujo paso a paso ni muestra el número SINPE o IBAN según el método seleccionado</div>
+        <div><span class="dep-tag">T-24</span></div>
+      </td>
+    </tr>
+    <tr>
+      <td class="td-num">T-26</td>
+      <td class="td-badge"><span class="badge high">ALTO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Notificar al admin por email en menos de 5 minutos tras recibir donación</div>
+        <div class="task-detail">EmailJS template_hih689c con datos de la donación y enlace al panel admin</div>
+        <div><span class="dep-tag">T-24</span></div>
+      </td>
+    </tr>
+    <tr>
+      <td class="td-num">T-27</td>
+      <td class="td-badge"><span class="badge high">ALTO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Implementar <code>POST /donaciones/:id/confirmar</code> y <code>/rechazar</code> para el admin</div>
+        <div class="task-detail">Confirmar: notifica por email a donante y al estudiante del proyecto. Rechazar: motivo obligatorio, notifica al donante. Toda acción queda auditada (quién, cuándo, qué comprobante)</div>
+        <div><span class="dep-tag">T-26</span></div>
+      </td>
+    </tr>
+    <tr>
+      <td class="td-num">T-28</td>
+      <td class="td-badge"><span class="badge high">ALTO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Crear página <code>/mis-donaciones</code> — historial del exalumno</div>
+        <div class="task-detail">Listado con estado de cada donación (pendiente / confirmada / rechazada), monto, fecha y proyecto destino</div>
+        <div><span class="dep-tag">T-24</span></div>
+      </td>
+    </tr>
+    <tr>
+      <td class="td-num">T-29</td>
+      <td class="td-badge"><span class="badge med">MEDIO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Cron: recordatorio al admin si pasan 48 horas sin confirmar una donación</div>
+        <div class="task-detail">SLA de 48 horas hábiles definido en el spec — sin este recordatorio el admin puede olvidar donaciones pendientes</div>
+        <div><span class="dep-tag">T-24</span></div>
+      </td>
+    </tr>
+    <tr>
+      <td class="td-num">T-30</td>
+      <td class="td-badge"><span class="badge low">BAJO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Configurar Supabase Storage con acceso restringido por rol para comprobantes</div>
+        <div class="task-detail">Los comprobantes deben ser visibles solo para el admin — hoy no existe política de acceso en el bucket</div>
+        <div><span class="dep-tag">T-24</span></div>
+      </td>
+    </tr>
+  </table>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- BLOQUE 6 — PANEL ADMIN -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="block">
+  <div class="block-header admin">
+    <span class="block-num">B6</span>
+    <span class="block-title">RF-08 — Panel Administrativo completo</span>
+    <span class="block-done">✓ COMPLETADO</span>
+    <span class="block-week">Semana 3–4</span>
+  </div>
+  <table class="tasks">
+    <tr class="task-done">
+      <td class="td-num">T-31</td>
+      <td class="td-badge"><span class="badge done">HECHO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Conectar dashboard <code>/admin</code> al endpoint real de KPIs</div>
+        <div class="task-detail">El endpoint <code>/api/admin/kpis</code> existe y devuelve datos reales. El frontend muestra datos mock — solo falta conectarlos</div>
+        <div><span class="done-tag">Dashboard conectado a <code>/api/admin/stats</code> con datos reales</span></div>
+      </td>
+    </tr>
+    <tr class="task-done">
+      <td class="td-num">T-32</td>
+      <td class="td-badge"><span class="badge done">HECHO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Crear página <code>/admin/matches</code> — tabla de conexiones con gestión</div>
+        <div class="task-detail">Columnas: exalumno, estudiante, tipo de apoyo, score, estado, fecha. Filtros: carrera, tipo de apoyo, estado, rango de fechas. Exportar a CSV. Alerta visual si el match lleva más de 6 meses activo</div>
+        <div><span class="done-tag">Filtros de carrera y rango de fechas añadidos (+ fix: la API no devolvía carrera)</span></div>
+      </td>
+    </tr>
+    <tr class="task-done">
+      <td class="td-num">T-33</td>
+      <td class="td-badge"><span class="badge done">HECHO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Crear página <code>/admin/donaciones</code> — cola con confirmación/rechazo</div>
+        <div class="task-detail">Cola ordenada por antigüedad, indicador rojo si lleva más de 24 horas pendiente, visor de comprobante (imagen o PDF), botones Confirmar / Rechazar con motivo obligatorio</div>
+        <div><span class="done-tag">Indicador "+24h pendiente" y modal de motivo obligatorio (se guarda y se notifica por email)</span></div>
+      </td>
+    </tr>
+    <tr class="task-done">
+      <td class="td-num">T-34</td>
+      <td class="td-badge"><span class="badge done">HECHO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Crear página <code>/admin/reportes</code> — dashboard de impacto con gráficos</div>
+        <div class="task-detail">Métricas: total donado CRC+USD, proyectos apoyados, matches activos/cerrados, distribución por carrera y sede, donantes nuevos vs. recurrentes. Filtro por rango de fechas. Exportar como PDF</div>
+        <div><span class="done-tag">Filtro de fechas + KPIs de periodo, proyectos apoyados, matches cerrados y gráfico donantes nuevos/recurrentes</span></div>
+      </td>
+    </tr>
+    <tr class="task-done">
+      <td class="td-num">T-35</td>
+      <td class="td-badge"><span class="badge done">HECHO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Crear página <code>/admin/usuarios</code> — gestión de cuentas</div>
+        <div class="task-detail">Tabla de todos los usuarios con acción de suspender/activar y eliminación permanente. Implementar <code>GET /admin/usuarios</code>, <code>PATCH /admin/usuarios/:id</code>, <code>DELETE /admin/usuarios/:id</code> en backend</div>
+        <div><span class="done-tag">Endpoint DELETE (Prisma en transacción + Auth de Supabase) y botón eliminar con confirmación</span></div>
+      </td>
+    </tr>
+  </table>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- BLOQUE 7 — POSICIONES -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="block">
+  <div class="block-header pos">
+    <span class="block-num">B7</span>
+    <span class="block-title">RF-10 — Publicación de Posiciones</span>
+    <span class="block-week">Semana 3–4</span>
+  </div>
+  <table class="tasks">
+    <tr>
+      <td class="td-num">T-36</td>
+      <td class="td-badge"><span class="badge high">ALTO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Agregar campos faltantes al modelo Sequelize de Posición</div>
+        <div class="task-detail">Faltan: <code>sector[]</code>, <code>habilidades_requeridas[]</code>, <code>descripcion_general</code>, <code>responsabilidades[]</code>, <code>lugar</code>, <code>jornada</code>, <code>modalidad</code></div>
+        <div><span class="dep-tag">T-01</span></div>
+      </td>
+    </tr>
+    <tr>
+      <td class="td-num">T-37</td>
+      <td class="td-badge"><span class="badge high">ALTO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Crear página <code>/posiciones/nueva</code> — formulario completo para publicar</div>
+        <div class="task-detail">Solo exalumnos con <code>perfil_completo = true</code> pueden publicar. Incluir todos los campos del spec</div>
+        <div><span class="dep-tag">T-36</span><span class="dep-tag">T-07</span></div>
+      </td>
+    </tr>
+    <tr>
+      <td class="td-num">T-38</td>
+      <td class="td-badge"><span class="badge high">ALTO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Crear página <code>/posiciones/[id]</code> — detalle con botón "Aplicar"</div>
+        <div class="task-detail">Vista pública de la posición con todos sus detalles, link a "Adaptar mi CV" y botón de aplicación</div>
+        <div><span class="dep-tag">T-36</span></div>
+      </td>
+    </tr>
+    <tr>
+      <td class="td-num">T-39</td>
+      <td class="td-badge"><span class="badge high">ALTO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Crear página <code>/mis-posiciones</code> — listado de posiciones del exalumno</div>
+        <div class="task-detail">Estados de cada posición, acceso a lista de aplicantes, opción de marcar como cubierta</div>
+        <div><span class="dep-tag">T-36</span></div>
+      </td>
+    </tr>
+    <tr>
+      <td class="td-num">T-40</td>
+      <td class="td-badge"><span class="badge med">MEDIO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Cron: cerrar automáticamente posiciones al vencer <code>fecha_limite</code></div>
+        <div class="task-detail">Sin este job las posiciones vencidas siguen apareciendo activas indefinidamente</div>
+        <div><span class="dep-tag">T-36</span></div>
+      </td>
+    </tr>
+    <tr>
+      <td class="td-num">T-41</td>
+      <td class="td-badge"><span class="badge med">MEDIO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Notificar a aplicantes cuando la posición se marca como cubierta</div>
+        <div class="task-detail">Descarte anónimo — el email informa que la posición fue cubierta sin revelar quién fue seleccionado</div>
+        <div><span class="dep-tag">T-40</span></div>
+      </td>
+    </tr>
+  </table>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- BLOQUE 8 — APLICACIONES -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="block">
+  <div class="block-header aplic">
+    <span class="block-num">B8</span>
+    <span class="block-title">RF-13 — Proceso de Aplicación</span>
+    <span class="block-week">Semana 4</span>
+  </div>
+  <table class="tasks">
+    <tr>
+      <td class="td-num">T-42</td>
+      <td class="td-badge"><span class="badge high">ALTO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Conectar modal de aplicación al backend real</div>
+        <div class="task-detail">El modal (selector de CV + mensaje) existe en UI pero no llama a ningún endpoint. Implementar <code>POST /aplicaciones</code> desde el frontend</div>
+        <div><span class="dep-tag">T-38</span><span class="dep-tag">T-01</span></div>
+      </td>
+    </tr>
+    <tr>
+      <td class="td-num">T-43</td>
+      <td class="td-badge"><span class="badge high">ALTO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Crear página <code>/mis-aplicaciones</code> — historial del estudiante</div>
+        <div class="task-detail">Listado de posiciones a las que aplicó, estado de cada aplicación (enviada / en revisión / seleccionado / descartado) y opción de retirar mientras esté en estado enviada</div>
+        <div><span class="dep-tag">T-42</span></div>
+      </td>
+    </tr>
+    <tr>
+      <td class="td-num">T-44</td>
+      <td class="td-badge"><span class="badge med">MEDIO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Email al exalumno cuando llega una nueva aplicación a su posición</div>
+        <div class="task-detail">Notificación automática con nombre del estudiante y enlace a la lista de aplicantes</div>
+        <div><span class="dep-tag">T-42</span></div>
+      </td>
+    </tr>
+    <tr>
+      <td class="td-num">T-45</td>
+      <td class="td-badge"><span class="badge med">MEDIO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Email al estudiante al ser seleccionado o descartado</div>
+        <div class="task-detail">Notificación cuando el exalumno cambia el estado de la aplicación</div>
+        <div><span class="dep-tag">T-42</span></div>
+      </td>
+    </tr>
+  </table>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- BLOQUE 9 — CURRICULUM / IA -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="block">
+  <div class="block-header cv">
+    <span class="block-num">B9</span>
+    <span class="block-title">RF-11 / RF-12 — Curriculum Vitae e IA de Adaptación</span>
+    <span class="block-week">Semana 4–5</span>
+  </div>
+  <table class="tasks">
+    <tr>
+      <td class="td-num">T-46</td>
+      <td class="td-badge"><span class="badge med">MEDIO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Renombrar ruta <code>/cv</code> → <code>/mi-curriculum</code> en el frontend</div>
+        <div class="task-detail">Actualizar link del sidebar y todos los internos. El spec especifica esta ruta exacta</div>
+      </td>
+    </tr>
+    <tr>
+      <td class="td-num">T-47</td>
+      <td class="td-badge"><span class="badge med">MEDIO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Conectar editor <code>/mi-curriculum</code> a las APIs reales del CV</div>
+        <div class="task-detail">La página muestra datos hardcodeados de "Mariana Rodríguez". Implementar editor funcional de las 4 secciones: Académica, Experiencia, Habilidades, Certificaciones</div>
+        <div><span class="dep-tag">T-46</span><span class="dep-tag">T-01</span></div>
+      </td>
+    </tr>
+    <tr>
+      <td class="td-num">T-48</td>
+      <td class="td-badge"><span class="badge high">ALTO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Implementar integración con Claude API para adaptación de CV (RF-12)</div>
+        <div class="task-detail">No hay ninguna llamada a la API de Anthropic en el proyecto. Usar modelo <code>claude-sonnet-4-6</code> con prompt de criterios de reclutador profesional. Streaming de respuesta requerido</div>
+        <div><span class="dep-tag">T-47</span></div>
+      </td>
+    </tr>
+    <tr>
+      <td class="td-num">T-49</td>
+      <td class="td-badge"><span class="badge high">ALTO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Implementar UI de aceptar / editar / descartar sugerencias de la IA</div>
+        <div class="task-detail">La vista lado a lado existe en UI pero las acciones no hacen nada. Guardar versiones adaptadas en la tabla <code>CurriculumVersiones</code></div>
+        <div><span class="dep-tag">T-48</span></div>
+      </td>
+    </tr>
+    <tr>
+      <td class="td-num">T-50</td>
+      <td class="td-badge"><span class="badge med">MEDIO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Crear página <code>/mi-curriculum/adaptar/[id]</code> — adaptar CV a posición específica</div>
+        <div class="task-detail">Recibe el ID de una posición, le pasa el contexto a la IA y genera sugerencias específicas para ese rol</div>
+        <div><span class="dep-tag">T-48</span><span class="dep-tag">T-38</span></div>
+      </td>
+    </tr>
+  </table>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- BLOQUE 10 — FRAUDE -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="block">
+  <div class="block-header fraud">
+    <span class="block-num">B10</span>
+    <span class="block-title">RF-09 — Seguridad y Gestión de Fraude</span>
+    <span class="block-week">Semana 4</span>
+  </div>
+  <table class="tasks">
+    <tr>
+      <td class="td-num">T-51</td>
+      <td class="td-badge"><span class="badge med">MEDIO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Implementar auto-suspensión tras 3 reportes en <code>reporteperfil.service.js</code></div>
+        <div class="task-detail">Al crear un reporte, contar reportes activos del perfil — si llega a 3, <code>activo = false</code> y notificar al admin. Hoy el servicio es CRUD puro</div>
+        <div><span class="dep-tag">T-01</span><span class="dep-tag">T-02</span></div>
+      </td>
+    </tr>
+    <tr>
+      <td class="td-num">T-52</td>
+      <td class="td-badge"><span class="badge med">MEDIO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Garantizar anonimato del reportador en respuestas del API</div>
+        <div class="task-detail">El endpoint actual devuelve todos los datos incluyendo <code>reportado_por</code>. El campo nunca debe ser visible en respuestas públicas ni para el usuario reportado</div>
+        <div><span class="dep-tag">T-01</span></div>
+      </td>
+    </tr>
+    <tr>
+      <td class="td-num">T-53</td>
+      <td class="td-badge"><span class="badge med">MEDIO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Agregar botón "Reportar perfil" en <code>/perfil/[id]</code> con modal</div>
+        <div class="task-detail">Modal con motivo predefinido (selector) y descripción opcional. El usuario reportado no recibe notificación de quién lo reportó</div>
+        <div><span class="dep-tag">T-09</span><span class="dep-tag">T-51</span></div>
+      </td>
+    </tr>
+    <tr>
+      <td class="td-num">T-54</td>
+      <td class="td-badge"><span class="badge med">MEDIO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Validaciones de coherencia RF-09.2</div>
+        <div class="task-detail">Si <code>anio_ingreso + 8 años &lt; hoy</code> y el nivel sigue igual → alerta en panel admin. Si el carné no cumple formato UCR → error 400 al guardar</div>
+        <div><span class="dep-tag">T-11</span></div>
+      </td>
+    </tr>
+  </table>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- BLOQUE 11 — NO FUNCIONALES -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="block">
+  <div class="block-header nfunc">
+    <span class="block-num">B11</span>
+    <span class="block-title">RNF — Requerimientos No Funcionales y Polish</span>
+    <span class="block-week">Continuo</span>
+  </div>
+  <table class="tasks">
+    <tr>
+      <td class="td-num">T-55</td>
+      <td class="td-badge"><span class="badge low">BAJO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Traducir textos en inglés que quedaron sin localizar</div>
+        <div class="task-detail">"Directory" → "Directorio" · "CV Optimization" → "Optimización de CV" · "AI Career Assistant" → "Asistente IA de Carrera". El spec exige la plataforma enteramente en español</div>
+      </td>
+    </tr>
+    <tr>
+      <td class="td-num">T-56</td>
+      <td class="td-badge"><span class="badge low">BAJO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Agregar <code>aria-label</code> en botones de acción sin texto visible</div>
+        <div class="task-detail">Varios botones de íconos (cerrar modal, enviar mensaje, reportar) no tienen etiqueta accesible. RNF-05 exige cumplimiento WCAG 2.1 nivel AA</div>
+      </td>
+    </tr>
+    <tr>
+      <td class="td-num">T-57</td>
+      <td class="td-badge"><span class="badge low">BAJO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Implementar paginación en directorios y en la tabla de matches del admin</div>
+        <div class="task-detail">RNF-01 exige cargar en menos de 3 segundos con hasta 500 perfiles — sin paginación una sola query puede traer todos los registros</div>
+        <div><span class="dep-tag">T-16</span><span class="dep-tag">T-17</span></div>
+      </td>
+    </tr>
+    <tr>
+      <td class="td-num">T-58</td>
+      <td class="td-badge"><span class="badge low">BAJO</span></td>
+      <td class="td-desc">
+        <div class="task-name">Configurar monitoring de uptime (Vercel Analytics o similar)</div>
+        <div class="task-detail">RNF-04 exige 99% de uptime mensual — sin alertas no hay forma de saber si la plataforma cayó</div>
+      </td>
+    </tr>
+  </table>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- MAPA DE DEPENDENCIAS -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="dep-section">
+  <h2>// mapa de dependencias — cadenas críticas</h2>
+  <div class="dep-grid">
+
+    <div class="dep-card">
+      <div class="dep-card-title">Cadena de seguridad (bloquea todo)</div>
+      <div class="dep-chain">
+        <strong>T-01</strong> → <strong>T-02</strong>
+        <span class="dep-arrow">→</span> habilita T-14, T-15, T-18, T-20, T-24, T-35
+      </div>
+    </div>
+
+    <div class="dep-card">
+      <div class="dep-card-title">Cadena del directorio</div>
+      <div class="dep-chain">
+        T-01, T-07 <span class="dep-arrow">→</span> T-14 <span class="dep-arrow">→</span> T-16<br>
+        T-01, T-07, T-08 <span class="dep-arrow">→</span> T-15 <span class="dep-arrow">→</span> T-17
+      </div>
+    </div>
+
+    <div class="dep-card">
+      <div class="dep-card-title">Cadena del matching</div>
+      <div class="dep-chain">
+        T-07 <span class="dep-arrow">→</span> T-18 <span class="dep-arrow">→</span> T-19, T-20<br>
+        T-20 <span class="dep-arrow">→</span> T-21 <span class="dep-arrow">→</span> T-22, T-23, T-32
+      </div>
+    </div>
+
+    <div class="dep-card">
+      <div class="dep-card-title">Cadena de donaciones</div>
+      <div class="dep-chain">
+        T-01, T-02 <span class="dep-arrow">→</span> T-24 <span class="dep-arrow">→</span> T-25, T-26, T-27, T-28, T-29<br>
+        T-27 <span class="dep-arrow">→</span> T-33, T-34
+      </div>
+    </div>
+
+    <div class="dep-card">
+      <div class="dep-card-title">Cadena de posiciones</div>
+      <div class="dep-chain">
+        T-01, T-07 <span class="dep-arrow">→</span> T-36 <span class="dep-arrow">→</span> T-37, T-38, T-39, T-40<br>
+        T-38 <span class="dep-arrow">→</span> T-42 <span class="dep-arrow">→</span> T-43, T-44, T-45
+      </div>
+    </div>
+
+    <div class="dep-card">
+      <div class="dep-card-title">Cadena del CV / IA</div>
+      <div class="dep-chain">
+        T-46 <span class="dep-arrow">→</span> T-47 <span class="dep-arrow">→</span> T-48 <span class="dep-arrow">→</span> T-49<br>
+        T-48 + T-38 <span class="dep-arrow">→</span> T-50
+      </div>
+    </div>
+
+    <div class="dep-card">
+      <div class="dep-card-title">Cadena de perfiles</div>
+      <div class="dep-chain">
+        T-06 <span class="dep-arrow">→</span> T-07 <span class="dep-arrow">→</span> T-09, T-10<br>
+        T-09 <span class="dep-arrow">→</span> T-51 (botón reportar en perfil público)
+      </div>
+    </div>
+
+    <div class="dep-card">
+      <div class="dep-card-title">Bloqueo más amplio</div>
+      <div class="dep-chain">
+        <strong>T-01</strong> desbloquea 14 tareas directas.<br>
+        <strong>T-07</strong> desbloquea matching, directorios y posiciones.<br>
+        Sin T-01 y T-07, los bloques B3–B7 no pueden avanzar.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer class="doc-footer">
+  <span>Plataforma Exalumnos UCR — Análisis Junio 2026</span>
+  <span>58 tareas · 12 bloques · Imprimir como PDF: Ctrl+P</span>
+</footer>
+
+</body>
+</html>

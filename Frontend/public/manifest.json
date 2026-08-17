@@ -1,0 +1,19 @@
+{
+  "name": "Fundación Exalumnos U",
+  "short_name": "Exalumnos U",
+  "description": "Plataforma de mentoría, donaciones y empleo para la comunidad de egresados de la Universidad de Costa Rica.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#EEF3F7",
+  "theme_color": "#004C63",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "/UCR_EXALUMNOS-1024x1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

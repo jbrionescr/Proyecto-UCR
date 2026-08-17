@@ -1,0 +1,13 @@
+export { Landing } from "./Landing";
+export { Register } from "./Register";
+export { DashAlumni } from "./DashAlumni";
+export { DashStudent } from "./DashStudent";
+export { DirectoryAlumni } from "./DirectoryAlumni";
+export { DirectoryStudent } from "./DirectoryStudent";
+export { Matching } from "./Matching";
+export { Donations } from "./Donations";
+export { Jobs } from "./Jobs";
+export { CVEditor } from "./CVEditor";
+export { CVAdaptAI } from "./CVAdaptAI";
+export { Admin } from "./Admin";
+export { SemanaU } from "./SemanaU";

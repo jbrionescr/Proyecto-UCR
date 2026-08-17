@@ -1,0 +1,88 @@
+{
+  "name": "Validación de comprobantes de donación (OCR) — UCR Alumni",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "validar-comprobante",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "webhook-in",
+      "name": "Webhook (la app dispara)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "validar-comprobante"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.body.comprobante_url }}",
+        "responseFormat": "file",
+        "options": {}
+      },
+      "id": "descargar",
+      "name": "Descargar comprobante",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "annotate",
+        "inputType": "binary",
+        "binaryPropertyName": "data",
+        "requests": [{ "feature": "textDetection" }]
+      },
+      "id": "ocr-vision",
+      "name": "OCR (Google Vision)",
+      "type": "n8n-nodes-base.googleCloudVision",
+      "typeVersion": 1,
+      "position": [680, 300],
+      "notes": "Requiere credencial 'Google Cloud Vision'. Devuelve el texto detectado en el comprobante."
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// Junta el formulario (del webhook) + el texto del OCR y llama a la lógica\n// de comparación (pega aquí el contenido de nodo-comparacion-ocr.js, adaptado\n// para leer un solo item). Ver README para el código completo.\n\nconst entrada = $('Webhook (la app dispara)').first().json.body;\nconst formulario = entrada.formulario || {};\nconst donacion_id = entrada.donacion_id;\n\n// Texto que devolvió Google Vision (ajusta la ruta según la salida real del nodo):\nconst textoOCR = $json.textAnnotations?.[0]?.description\n  || $json.fullTextAnnotation?.text\n  || $json.text\n  || '';\n\nconst ocr = { texto_completo: textoOCR, monto_detectado: null, fecha_detectada: null, referencia_detectada: null };\n\n// ▼▼▼ PEGA AQUÍ las funciones de nodo-comparacion-ocr.js (CONFIG, normalizarMonto,\n// detectarMoneda, aFecha, normalizarRef, extraerDeTexto, validar) ▼▼▼\n// ... (idénticas a tu archivo) ...\n\nconst validacion = validar(formulario, ocr); // { estado, confianza, checks, motivos }\nreturn [{ json: { donacion_id, ...validacion } }];"
+      },
+      "id": "comparar",
+      "name": "Comparar OCR vs formulario (Code)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'https://TU-APP.com/api/donaciones/' + $json.donacion_id + '/validacion' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "x-n8n-secret", "value": "={{ $env.N8N_WEBHOOK_SECRET }}" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ estado: $json.estado, confianza: $json.confianza, checks: $json.checks, motivos: $json.motivos }) }}",
+        "options": {}
+      },
+      "id": "callback",
+      "name": "Devolver veredicto a la app",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1120, 300]
+    }
+  ],
+  "connections": {
+    "Webhook (la app dispara)": { "main": [[{ "node": "Descargar comprobante", "type": "main", "index": 0 }]] },
+    "Descargar comprobante": { "main": [[{ "node": "OCR (Google Vision)", "type": "main", "index": 0 }]] },
+    "OCR (Google Vision)": { "main": [[{ "node": "Comparar OCR vs formulario (Code)", "type": "main", "index": 0 }]] },
+    "Comparar OCR vs formulario (Code)": { "main": [[{ "node": "Devolver veredicto a la app", "type": "main", "index": 0 }]] }
+  },
+  "settings": {},
+  "pinData": {}
+}

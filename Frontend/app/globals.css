@@ -1,0 +1,433 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&family=Raleway:wght@700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 98%; /* Gris claro institucional */
+    --foreground: 0 0% 8%; /* Negro oficial #141414 */
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 8%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 8%;
+
+    --primary: 194 100% 19%; /* Esmeralda oficial #004C63 */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 198 81% 63%; /* Celeste oficial #54BCEB */
+    --secondary-foreground: 0 0% 8%;
+
+    --muted: 194 20% 95%; /* Tint claro de esmeralda */
+    --muted-foreground: 194 15% 40%;
+
+    --accent: 33 100% 55%; /* Amarillo oficial #FF9B18 */
+    --accent-foreground: 0 0% 8%;
+
+    --destructive: 10 90% 55%; /* Naranja oficial #F34B26 */
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 194 15% 90%;
+    --input: 194 15% 90%;
+    --ring: 194 100% 19%;
+
+    --radius: 0.5rem;
+
+    /* FWD Costa Rica accent colors */
+    --fwd-cyan:   #00AEEF;
+    --fwd-purple: #6B2D8B;
+    --fwd-yellow: #F5C400;
+    --fwd-green:  #00A651;
+
+    /* FundacionU — tokens semánticos (tema claro) */
+    --fu-bg: #EEF3F7;
+    --fu-surface: #FFFFFF;
+    --fu-surface-2: #F3F6FA;
+    --fu-surface-3: #E9EFF5;
+    --fu-text: #132430;
+    --fu-text-2: #3A4C59;
+    --fu-muted: #6B7C89;
+    --fu-border: #E1E8EF;
+    --fu-shadow: 0 1px 2px rgba(19, 36, 48, 0.05), 0 8px 24px rgba(19, 36, 48, 0.06);
+    --fu-blue: #005DA4;
+    --fu-blue-deep: #004C63;
+
+    /* Color de marca del sidebar/botones por rol (por defecto: Estudiante) */
+    --fu-sidebar: #003b73;
+  }
+
+  .dark {
+    --background: 0 0% 8%; /* Negro oficial #141414 */
+    --foreground: 0 0% 98%;
+
+    --card: 0 0% 12%; /* Negro un poco más claro para tarjetas */
+    --card-foreground: 0 0% 98%;
+
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 198 81% 63%; /* Celeste como primario en modo oscuro */
+    --primary-foreground: 0 0% 8%;
+
+    --secondary: 194 100% 19%; /* Esmeralda como secundario en modo oscuro */
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 65%;
+
+    --accent: 33 100% 55%; /* Amarillo oficial #FF9B18 */
+    --accent-foreground: 0 0% 8%;
+
+    --destructive: 10 90% 55%; /* Naranja oficial #F34B26 */
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 198 81% 63%;
+
+    /* FundacionU — tokens semánticos (tema oscuro) */
+    --fu-bg: #0A1420;
+    --fu-surface: #111E2C;
+    --fu-surface-2: #16273A;
+    --fu-surface-3: #1D2F44;
+    --fu-text: #EAF2F9;
+    --fu-text-2: #B6C6D4;
+    --fu-muted: #8496A6;
+    --fu-border: #26394F;
+    --fu-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 32px rgba(0, 0, 0, 0.35);
+    --fu-blue: #2A8FD8;
+    --fu-blue-deep: #005DA4;
+  }
+}
+
+/* ============================================================
+   Color de marca por rol — sidebar y botones (default = Estudiante)
+   Se aplica vía atributo [data-role] en el contenedor autenticado
+   (ver SidebarWrapper), y sobreescribe --primary/--fu-sidebar para
+   todo lo que esté dentro (botones con bg-primary, sidebar, etc.)
+   independientemente del tema claro/oscuro.
+   ============================================================ */
+[data-role="exalumno"] {
+  --primary: 23 90% 54%;       /* #F37021 */
+  --primary-foreground: 0 0% 100%;
+  --ring: 23 90% 54%;
+  --fu-sidebar: #F37021;
+}
+[data-role="admin"] {
+  --primary: 52 100% 50%;      /* #FFDD00 */
+  --primary-foreground: 0 0% 8%;
+  --ring: 52 100% 50%;
+  --fu-sidebar: #003b73;       /* Mismo azul que el sidebar de Estudiante */
+}
+
+/* Hover de marca para AnimatedHeading, resuelto en CSS (no en JS/Framer)
+   para que siempre reaccione al tema claro/oscuro actual. */
+.fu-animated-heading:hover {
+  color: var(--fu-heading-hover, #F37021);
+}
+
+/* ============================================================
+   FundacionU — Helpers de superficie/texto con tokens semánticos
+   Uso: <div className="fu-surface fu-text"> … </div>
+   ============================================================ */
+@layer components {
+  .fu-bg        { background-color: var(--fu-bg); }
+  .fu-surface   { background-color: var(--fu-surface); box-shadow: var(--fu-shadow); }
+  .fu-surface-2 { background-color: var(--fu-surface-2); }
+  .fu-surface-3 { background-color: var(--fu-surface-3); }
+  .fu-text      { color: var(--fu-text); }
+  .fu-text-2    { color: var(--fu-text-2); }
+  .fu-muted     { color: var(--fu-muted); }
+  .fu-border    { border-color: var(--fu-border); }
+
+  /* Tarjeta base reutilizable */
+  .fu-card {
+    background-color: var(--fu-surface);
+    border: 1px solid var(--fu-border);
+    border-radius: 1.25rem;
+    box-shadow: var(--fu-shadow);
+  }
+
+  /* Texto con degradado de marca */
+  .fu-text-gradient {
+    background-image: linear-gradient(120deg, #005DA4, #00C0F3 45%, #F37021);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+/* Degradado animado de marca para fondos hero */
+.fu-hero-gradient {
+  background: linear-gradient(120deg, #005DA4, #00C0F3, #6DC067, #FDB912, #F37021);
+  background-size: 300% 300%;
+}
+
+/* Malla de burbujas para fondos parallax (vívida) */
+.fu-mesh {
+  background-color: var(--fu-bg);
+  background-image:
+    radial-gradient(at 18% 22%, rgba(0, 192, 243, 0.30) 0px, transparent 48%),
+    radial-gradient(at 82% 12%, rgba(243, 112, 33, 0.24) 0px, transparent 45%),
+    radial-gradient(at 75% 82%, rgba(109, 192, 103, 0.26) 0px, transparent 48%),
+    radial-gradient(at 25% 88%, rgba(253, 185, 18, 0.24) 0px, transparent 48%),
+    radial-gradient(at 50% 50%, rgba(142, 216, 248, 0.14) 0px, transparent 60%);
+}
+html.dark .fu-mesh {
+  background-image:
+    radial-gradient(at 18% 22%, rgba(0, 192, 243, 0.22) 0px, transparent 48%),
+    radial-gradient(at 82% 12%, rgba(243, 112, 33, 0.18) 0px, transparent 45%),
+    radial-gradient(at 75% 82%, rgba(109, 192, 103, 0.20) 0px, transparent 48%),
+    radial-gradient(at 25% 88%, rgba(253, 185, 18, 0.16) 0px, transparent 48%);
+}
+
+/* Respeto por usuarios con reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fu-float,
+  .animate-fu-gradient,
+  .animate-fu-blob { animation: none !important; }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply text-foreground antialiased font-sans;
+    background-color: hsl(var(--background));
+    background-image: linear-gradient(to right, hsl(var(--primary) / 0.05) 1px, transparent 1px),
+                      linear-gradient(to bottom, hsl(var(--primary) / 0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+}
+
+/* Custom scrollbar para catálogos */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--border));
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--muted-foreground));
+}
+
+/* ============================================================
+   Efectos Premium: Líneas Brillantes, Glow y Destellos
+   ============================================================ */
+
+@keyframes border-rotate {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.glowing-card {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.glowing-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(
+    transparent,
+    rgba(84, 188, 235, 0.15),
+    rgba(15, 76, 129, 0.3),
+    rgba(84, 188, 235, 0.4),
+    transparent 50%
+  );
+  animation: border-rotate 6s linear infinite;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+
+.glowing-card:hover::before {
+  opacity: 1;
+}
+
+/* Shiny sliding sheen effect for premium buttons */
+@keyframes shiny-sheen {
+  0% {
+    left: -120%;
+  }
+  35%, 100% {
+    left: 120%;
+  }
+}
+
+.shiny-button {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.shiny-button::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.45),
+    transparent
+  );
+  transform: skewX(-25deg);
+  animation: shiny-sheen 3.5s infinite ease-in-out;
+  pointer-events: none;
+}
+
+.shiny-button:active {
+  box-shadow: 0 0 20px rgba(84, 188, 235, 0.85), 0 0 40px rgba(84, 188, 235, 0.45) !important;
+  transform: scale(0.96) !important;
+}
+
+.shiny-button:disabled::after,
+.shiny-button[disabled]::after,
+.shiny-button[aria-disabled="true"]::after {
+  animation: none;
+  display: none;
+}
+
+/* Special glow ring for inputs on focus */
+.glow-input:focus {
+  box-shadow: 0 0 12px rgba(84, 188, 235, 0.5) !important;
+  border-color: rgba(84, 188, 235, 0.8) !important;
+}
+
+/* Focus naranja para inputs del login */
+.orange-focus:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(232, 82, 42, 0.3) !important;
+  border-color: #E8522A !important;
+}
+
+/* dark:border-slate-850 helper (Tailwind no incluye 850 por defecto) */
+.dark .border-slate-850 {
+  border-color: rgb(15 23 42 / 0.5);
+}
+
+/* =======================================================
+   Ocultar overlay de errores de Next.js en modo dev
+   (no afecta producción, solo limpia la UI durante demos)
+   ======================================================= */
+nextjs-portal {
+  display: none !important;
+}
+#__next-build-watcher,
+#nextjs__container_build_indicator {
+  display: none !important;
+}
+
+/* =======================================================
+   FWD Costa Rica — Detalles de color sutiles
+   ======================================================= */
+
+/* Barra decorativa delgada con los 4 colores FWD */
+.fwd-accent-bar {
+  height: 3px;
+  width: 100%;
+  background: linear-gradient(
+    to right,
+    #00AEEF 0%,
+    #00AEEF 25%,
+    #F5C400 25%,
+    #F5C400 50%,
+    #00A651 50%,
+    #00A651 75%,
+    #6B2D8B 75%,
+    #6B2D8B 100%
+  );
+  border-radius: 0 0 2px 2px;
+}
+
+/* Punto decorativo con color FWD para elementos activos */
+.fwd-dot-cyan::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #00AEEF;
+  margin-right: 6px;
+  vertical-align: middle;
+  box-shadow: 0 0 6px rgba(0, 174, 239, 0.6);
+}
+
+/* Línea izquierda activa con cyan FWD */
+.fwd-active-left {
+  border-left: 3px solid #00AEEF !important;
+  background: linear-gradient(
+    to right,
+    rgba(0, 174, 239, 0.08),
+    transparent
+  ) !important;
+}
+
+/* Glow sutil FWD cyan */
+.fwd-glow-cyan {
+  box-shadow: 0 0 16px rgba(0, 174, 239, 0.2);
+}
+
+/* Badge mini de colores FWD para etiquetas de estado */
+.fwd-badge-purple {
+  background: rgba(107, 45, 139, 0.12);
+  color: #6B2D8B;
+  border: 1px solid rgba(107, 45, 139, 0.25);
+}
+.fwd-badge-green {
+  background: rgba(0, 166, 81, 0.12);
+  color: #00A651;
+  border: 1px solid rgba(0, 166, 81, 0.25);
+}
+.fwd-badge-yellow {
+  background: rgba(245, 196, 0, 0.12);
+  color: #b38c00;
+  border: 1px solid rgba(245, 196, 0, 0.3);
+}
+
+/* ============================================================
+   Accesibilidad — clases globales activadas por A11yToolbar
+   (components/fu/A11yToolbar.tsx). Se aplican sobre #a11y-app-root
+   (contenido de la app, ver app/layout.tsx) para que la propia
+   barra de accesibilidad, montada como hermana vía portal, no
+   quede afectada por sus propios filtros.
+   ============================================================ */
+html.a11y-large-text {
+  font-size: 110%;
+}
+
+#a11y-app-root.a11y-high-contrast {
+  filter: contrast(135%) saturate(110%) brightness(90%);
+}
+
+#a11y-app-root.a11y-grayscale {
+  filter: grayscale(100%);
+}
+
+body.a11y-highlight-links #a11y-app-root a {
+  text-decoration: underline;
+  text-decoration-thickness: 3px;
+  color: #FFEB3B;
+  background-color: rgba(0, 0, 0, 0.85);
+  font-weight: 900;
+  padding: 2px;
+  border-radius: 2px;
+}

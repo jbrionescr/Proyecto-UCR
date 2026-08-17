@@ -1,0 +1,19 @@
+{
+  "name": "proyecto-ucr-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix Frontend\" \"npm run dev --prefix backend\"",
+    "build": "npm run build --prefix Frontend",
+    "start": "concurrently \"npm run start --prefix Frontend\" \"npm run start --prefix backend\"",
+    "lint": "npm run lint --prefix Frontend",
+    "prisma:generate": "npm run prisma:generate --prefix Frontend",
+    "prisma:push": "npm run prisma:push --prefix Frontend"
+  },
+  "dependencies": {
+    "concurrently": "^8.2.2",
+    "next": "^14.2.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  }
+}
